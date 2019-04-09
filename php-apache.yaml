@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-apache
+  labels:
+    app: php-apache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: php-apache
+  template:
+    metadata:
+      labels:
+        app: php-apache
+    spec:
+      containers:
+        - name: php-apache
+          # this is for minikube only, for gke you have to push the docker image to any container registry
+          # then use that image like
+          # image: docker.io/username/imagename
+          image: php-apache-gke:latest
+          # only for minikube, for gke remove this line or set any desired policy
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 80
+          # Environment variables from configMap, before using this create your config map using
+          # kubectl create configmap redishost --from-literal=REDIS_HOST=redis --from-literal=REDIS_PORT=6379
+          # for using Cloud memorystore change the REDIS_HOST value to your instance ip
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: redishost
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: redishost
+                  key: REDIS_PORT
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-apache
+spec:
+  type: NodePort
+  selector:
+    app: php-apache
+  ports:
+    - port: 80
+      targetPort: http
+      nodePort: 30510
+      protocol: TCP
