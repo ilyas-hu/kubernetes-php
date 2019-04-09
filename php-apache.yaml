@@ -18,7 +18,7 @@ spec:
         - name: php-apache
           # this is for minikube only, for gke you have to push the docker image to any container registry
           # then use that image like
-          # image: docker.io/username/imagename
+          # image: docker.io/username/php-apache-gke:latest
           image: php-apache-gke:latest
           # only for minikube, for gke remove this line or set any desired policy
           imagePullPolicy: Never
@@ -46,6 +46,7 @@ kind: Service
 metadata:
   name: php-apache
 spec:
+  # For GKE change it to LoadBalancer
   type: NodePort
   selector:
     app: php-apache
